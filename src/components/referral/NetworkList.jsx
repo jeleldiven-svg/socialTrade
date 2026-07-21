@@ -1,0 +1,6 @@
+import { Users } from "lucide-react";
+
+export default function NetworkList({ levels }) {
+  const members = levels.flatMap((items, level) => items.map((item) => ({ ...item, level: level + 1 })));
+  return <section className="rounded-2xl border bg-card p-5"><h2 className="font-heading text-lg font-semibold">Destek Grubu</h2>{members.length === 0 ? <div className="py-10 text-center"><Users className="mx-auto mb-3 h-8 w-8 text-muted-foreground/50" /><p className="text-sm font-medium">Henüz network üyen yok</p><p className="mt-1 text-xs text-muted-foreground">Referans linkini paylaşarak ilk halkayı oluştur.</p></div> : <div className="mt-4 divide-y">{members.map((member) => <div key={member.id} className="flex items-center justify-between py-3"><div><p className="text-sm font-medium">{member.user_name || "Üye"}</p><p className="text-xs text-muted-foreground">{member.level}. Seviye</p></div><span className={member.subscription_active ? "text-xs font-medium text-primary" : "text-xs text-muted-foreground"}>{member.subscription_active ? "Aktif" : "Pasif"}</span></div>)}</div>}</section>;
+}

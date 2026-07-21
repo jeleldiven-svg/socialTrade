@@ -1,0 +1,30 @@
+{
+  "name": "ReferralProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "user_name": {
+      "type": "string"
+    },
+    "referral_code": {
+      "type": "string"
+    },
+    "referrer_user_id": {
+      "type": "string"
+    },
+    "subscription_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "monthly_fee": {
+      "type": "number",
+      "default": 100
+    }
+  },
+  "required": [
+    "user_id",
+    "referral_code"
+  ]
+}

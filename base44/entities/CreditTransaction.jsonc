@@ -1,0 +1,41 @@
+{
+  "name": "CreditTransaction",
+  "type": "object",
+  "properties": {
+    "beneficiary_user_id": {
+      "type": "string"
+    },
+    "source_user_id": {
+      "type": "string"
+    },
+    "source_name": {
+      "type": "string"
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "amount": {
+      "type": "number"
+    },
+    "period": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "subscription_credit",
+        "investment_credit"
+      ],
+      "default": "investment_credit"
+    }
+  },
+  "required": [
+    "beneficiary_user_id",
+    "source_user_id",
+    "level",
+    "amount",
+    "period"
+  ]
+}
