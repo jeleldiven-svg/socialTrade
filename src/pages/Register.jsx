@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -22,51 +22,50 @@ const urlReferralCode =
 new URLSearchParams(window.location.search).get("ref");
 
 
-const [referralInput,setReferralInput]=
+const [referralInput,setReferralInput] =
 useState(urlReferralCode || "");
 
 
-const [referrerUserId,setReferrerUserId]=
+const [referrerUserId,setReferrerUserId] =
 useState(null);
 
 
-const [savedReferrer,setSavedReferrer]=
-useState(
-localStorage.getItem("signup_referrer")
-);
+const [email,setEmail] =
+useState("");
 
 
-const [checkingReferral,setCheckingReferral]=
+const [password,setPassword] =
+useState("");
+
+
+const [confirmPassword,setConfirmPassword] =
+useState("");
+
+
+const [error,setError] =
+useState("");
+
+
+const [loading,setLoading] =
 useState(false);
 
 
-const [email,setEmail]=useState("");
-
-const [password,setPassword]=useState("");
-
-const [confirmPassword,setConfirmPassword]=useState("");
+const [showOtp,setShowOtp] =
+useState(false);
 
 
-const [error,setError]=useState("");
-
-const [loading,setLoading]=useState(false);
-
-
-const [showOtp,setShowOtp]=useState(false);
-
-
-const [otpCode,setOtpCode]=useState("");
+const [otpCode,setOtpCode] =
+useState("");
 
 
 
-
+// REFERANS KONTROL (OPSİYONEL)
 
 const checkReferral = async()=>{
 
 
 const code =
 referralInput.trim().toUpperCase();
-
 
 
 if(!code){
@@ -78,12 +77,7 @@ return null;
 }
 
 
-
 try{
-
-
-setCheckingReferral(true);
-
 
 
 const result =
@@ -94,36 +88,15 @@ referral_code:code
 });
 
 
-
-if(result && result.length > 0){
-
-
-const userId =
-result[0].user_id;
+if(result && result.length>0){
 
 
-
-setReferrerUserId(userId);
-
-
-
-localStorage.setItem(
-"signup_referrer",
-userId
+setReferrerUserId(
+result[0].user_id
 );
 
 
-
-setSavedReferrer(userId);
-
-
-
-setError("");
-
-
-
-return userId;
-
+return result[0].user_id;
 
 
 }else{
@@ -131,42 +104,18 @@ return userId;
 
 setReferrerUserId(null);
 
-
-setError(
-"Geçersiz referans kodu."
-);
-
-
 return null;
 
-
 }
-
 
 
 }catch(err){
 
-
-console.error(err);
-
-
-setError(
-"Referans kontrolü başarısız."
-);
-
+console.log(err);
 
 return null;
 
-
-
-}finally{
-
-
-setCheckingReferral(false);
-
-
 }
-
 
 
 };
@@ -175,58 +124,12 @@ setCheckingReferral(false);
 
 
 
-useEffect(()=>{
-
-
-if(urlReferralCode){
-
-checkReferral();
-
-}
-
-
-},[]);
 const handleSubmit = async(e)=>{
 
 
 e.preventDefault();
 
-
 setError("");
-
-
-
-let validReferrer =
-referrerUserId ||
-savedReferrer ||
-localStorage.getItem("signup_referrer");
-
-
-
-if(!validReferrer){
-
-
-validReferrer =
-await checkReferral();
-
-
-}
-
-
-
-if(!validReferrer){
-
-
-setError(
-"Üyelik için geçerli referans kodu gereklidir."
-);
-
-
-return;
-
-
-}
-
 
 
 
@@ -234,12 +137,11 @@ if(password !== confirmPassword){
 
 
 setError(
-"Şifreler eşleşmiyor."
+"Şifreler eşleşmiyor"
 );
 
 
 return;
-
 
 }
 
@@ -252,9 +154,20 @@ setLoading(true);
 try{
 
 
+// Referans varsa kontrol et
+
+if(referralInput){
+
+await checkReferral();
+
+}
+
+
+
 await base44.auth.register({
 
 email,
+
 password
 
 });
@@ -267,9 +180,12 @@ setShowOtp(true);
 }catch(err){
 
 
+console.error(err);
+
+
 setError(
 err.message ||
-"Kayıt oluşturulamadı."
+"Kayıt oluşturulamadı"
 );
 
 
@@ -290,80 +206,12 @@ setLoading(false);
 
 
 
-const handleGoogle = ()=>{
-
-
-const finalReferrer =
-referrerUserId ||
-savedReferrer ||
-localStorage.getItem("signup_referrer");
-
-
-
-if(!finalReferrer){
-
-
-setError(
-"Google ile kayıt için önce referans kodu giriniz."
-);
-
-
-return;
-
-
-}
-
-
-
-base44.auth.loginWithProvider(
-
-"google",
-
-"/"
-
-);
-
-
-
-};
-
-
-
-
-
-
-
-
 const handleVerify = async()=>{
 
 
-setError("");
-
-
-
-const finalReferrer =
-referrerUserId ||
-savedReferrer ||
-localStorage.getItem("signup_referrer");
-
-
-
-if(!finalReferrer){
-
-
-setError(
-"Referans bilgisi bulunamadı."
-);
-
-
-return;
-
-
-}
-
-
-
 setLoading(true);
+
+setError("");
 
 
 
@@ -381,23 +229,18 @@ otpCode
 
 
 
-
 if(result?.access_token){
-
 
 base44.auth.setToken(
 result.access_token
 );
 
-
 }
-
 
 
 
 const currentUser =
 await base44.auth.me();
-
 
 
 
@@ -413,7 +256,7 @@ currentUser.email
 +
 
 Math.floor(
-1000 +
+1000+
 Math.random()*9000
 );
 
@@ -422,13 +265,13 @@ Math.random()*9000
 
 
 const existing =
+
 await base44.entities.ReferralProfile.filter({
 
 user_id:
 currentUser.id
 
 });
-
 
 
 
@@ -444,21 +287,17 @@ user_id:
 currentUser.id,
 
 
-
 user_name:
 currentUser.full_name ||
 currentUser.email,
-
 
 
 referral_code:
 generatedCode,
 
 
-
 referrer_user_id:
-finalReferrer,
-
+referrerUserId || null,
 
 
 network_level:1,
@@ -466,7 +305,9 @@ network_level:1,
 
 level_1_count:0,
 
+
 level_2_count:0,
+
 
 level_3_count:0,
 
@@ -490,11 +331,6 @@ monthly_fee:100
 
 
 
-localStorage.removeItem(
-"signup_referrer"
-);
-
-
 
 window.location.href="/";
 
@@ -506,10 +342,9 @@ window.location.href="/";
 console.error(err);
 
 
-
 setError(
 err.message ||
-"Doğrulama başarısız."
+"Doğrulama başarısız"
 );
 
 
@@ -523,10 +358,7 @@ setLoading(false);
 }
 
 
-
 };
-
-
 
 
 
@@ -547,26 +379,28 @@ toast({
 title:"Kod gönderildi",
 
 description:
-"Yeni doğrulama kodu e-postana gönderildi."
+"Yeni doğrulama kodu gönderildi."
 
 });
 
 
-
 }catch(err){
 
-
-setError(
-err.message ||
-"Kod gönderilemedi."
-);
-
+setError(err.message);
 
 }
 
 
 };
+
+
+
+
+
+
+
 if(showOtp){
+
 
 return (
 
@@ -576,14 +410,14 @@ icon={Mail}
 
 title="E-postanı doğrula"
 
-subtitle={`${email} adresine doğrulama kodu gönderildi`}
+subtitle={`${email} adresine kod gönderildi`}
 
 >
 
 
 {error &&
 
-<div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+<div className="mb-4 p-3 rounded bg-destructive/10 text-destructive">
 
 {error}
 
@@ -610,7 +444,8 @@ onChange={setOtpCode}
 <InputOTPGroup>
 
 
-{[0,1,2,3,4,5].map(i=>(
+{
+[0,1,2,3,4,5].map(i=>(
 
 <InputOTPSlot
 
@@ -620,7 +455,8 @@ index={i}
 
 />
 
-))}
+))
+}
 
 
 </InputOTPGroup>
@@ -634,20 +470,13 @@ index={i}
 
 
 
-
 <Button
 
 className="w-full mt-6"
 
+disabled={loading || otpCode.length<6}
+
 onClick={handleVerify}
-
-disabled={
-
-loading ||
-
-otpCode.length < 6
-
-}
 
 >
 
@@ -658,9 +487,9 @@ loading ?
 
 <>
 
-<Loader2 className="w-4 h-4 mr-2 animate-spin"/>
+<Loader2 className="w-4 h-4 animate-spin mr-2"/>
 
-Doğrulanıyor...
+Doğrulanıyor
 
 </>
 
@@ -678,7 +507,7 @@ Doğrulanıyor...
 
 <button
 
-className="w-full mt-4 text-sm text-primary"
+className="mt-4 text-sm"
 
 onClick={handleResend}
 
@@ -692,10 +521,12 @@ Yeni kod gönder
 
 </AuthLayout>
 
+
 );
 
 
 }
+
 
 
 
@@ -711,7 +542,8 @@ icon={UserPlus}
 
 title="Hesabını oluştur"
 
-subtitle="Referans networküne katıl"
+subtitle="SocialTrade ağına katıl"
+
 
 
 footer={
@@ -738,15 +570,15 @@ Giriş yap
 
 }
 
+
+
 >
-
-
 
 
 
 {error &&
 
-<div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+<div className="mb-4 p-3 rounded bg-destructive/10 text-destructive">
 
 {error}
 
@@ -758,27 +590,23 @@ Giriş yap
 
 
 
-
 <Button
 
 variant="outline"
 
 className="w-full mb-6"
 
-onClick={handleGoogle}
+onClick={()=>base44.auth.loginWithProvider("google","/")}
 
 >
 
 
 <GoogleIcon className="w-5 h-5 mr-2"/>
 
-
 Google ile devam et
 
 
 </Button>
-
-
 
 
 
@@ -795,82 +623,33 @@ className="space-y-4"
 
 
 
-
 <div>
 
 <Label>
 
-Referans Kodu
+Referans Kodu (Opsiyonel)
 
 </Label>
 
 
 <Input
 
-
 value={referralInput}
 
+placeholder="Varsa referans kodu"
 
-disabled={Boolean(urlReferralCode)}
-
-
-placeholder="Referans kodunuzu girin"
-
-
-
-onChange={(e)=>{
-
+onChange={(e)=>
 
 setReferralInput(
 e.target.value.toUpperCase()
-);
+)
 
-
-
-setReferrerUserId(null);
-
-
-
-}}
-
+}
 
 />
 
 
-<Button
-
-type="button"
-
-variant="secondary"
-
-className="w-full mt-2"
-
-disabled={checkingReferral}
-
-onClick={checkReferral}
-
->
-
-
-{
-
-checkingReferral ?
-
-"Kontrol ediliyor..."
-
-:
-
-"Referansı doğrula"
-
-}
-
-
-</Button>
-
-
 </div>
-
-
 
 
 
@@ -880,22 +659,19 @@ checkingReferral ?
 
 <Label>Email</Label>
 
-
 <Input
 
 type="email"
+
+required
 
 value={email}
 
 onChange={(e)=>setEmail(e.target.value)}
 
-required
-
 />
 
-
 </div>
-
 
 
 
@@ -905,22 +681,19 @@ required
 
 <Label>Şifre</Label>
 
-
 <Input
 
 type="password"
+
+required
 
 value={password}
 
 onChange={(e)=>setPassword(e.target.value)}
 
-required
-
 />
 
-
 </div>
-
 
 
 
@@ -930,19 +703,17 @@ required
 
 <Label>Şifre tekrar</Label>
 
-
 <Input
 
 type="password"
+
+required
 
 value={confirmPassword}
 
 onChange={(e)=>setConfirmPassword(e.target.value)}
 
-required
-
 />
-
 
 </div>
 
@@ -950,20 +721,11 @@ required
 
 
 
-
 <Button
 
-type="submit"
+className="w-full"
 
-className="w-full h-12"
-
-disabled={
-
-loading ||
-
-checkingReferral
-
-}
+disabled={loading}
 
 >
 
@@ -972,13 +734,7 @@ checkingReferral
 
 loading ?
 
-<>
-
-<Loader2 className="w-4 h-4 mr-2 animate-spin"/>
-
-Hesap oluşturuluyor...
-
-</>
+"Hesap oluşturuluyor..."
 
 :
 
@@ -992,11 +748,12 @@ Hesap oluşturuluyor...
 
 
 
+
 </form>
 
 
-
 </AuthLayout>
+
 
 );
 
