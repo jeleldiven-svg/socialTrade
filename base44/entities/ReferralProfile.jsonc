@@ -2,27 +2,65 @@
   "name": "ReferralProfile",
   "type": "object",
   "properties": {
+
     "user_id": {
       "type": "string"
     },
+
     "user_name": {
       "type": "string"
     },
+
     "referral_code": {
       "type": "string"
     },
+
     "referrer_user_id": {
       "type": "string"
     },
+
+    "network_level": {
+      "type": "integer",
+      "default": 1
+    },
+
+    "level_1_count": {
+      "type": "integer",
+      "default": 0
+    },
+
+    "level_2_count": {
+      "type": "integer",
+      "default": 0
+    },
+
+    "level_3_count": {
+      "type": "integer",
+      "default": 0
+    },
+
+    "total_team": {
+      "type": "integer",
+      "default": 0
+    },
+
+    "team_volume": {
+      "type": "number",
+      "default": 0
+    },
+
     "subscription_active": {
       "type": "boolean",
       "default": true
     },
+
     "monthly_fee": {
       "type": "number",
       "default": 100
     }
+
   },
+
   "required": [
     "user_id",
     "referral_code"

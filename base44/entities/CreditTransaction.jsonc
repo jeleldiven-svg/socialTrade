@@ -2,35 +2,65 @@
   "name": "CreditTransaction",
   "type": "object",
   "properties": {
+
     "beneficiary_user_id": {
       "type": "string"
     },
+
     "source_user_id": {
       "type": "string"
     },
+
     "source_name": {
       "type": "string"
     },
+
     "level": {
       "type": "integer",
       "minimum": 1,
-      "maximum": 4
+      "maximum": 10
     },
+
     "amount": {
       "type": "number"
     },
+
+    "currency": {
+      "type": "string",
+      "default": "USD"
+    },
+
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "subscription",
+        "investment",
+        "bonus",
+        "manual"
+      ],
+      "default": "investment"
+    },
+
     "period": {
       "type": "string"
     },
+
     "status": {
       "type": "string",
       "enum": [
-        "subscription_credit",
-        "investment_credit"
+        "pending",
+        "approved",
+        "cancelled"
       ],
-      "default": "investment_credit"
+      "default": "approved"
+    },
+
+    "created_at": {
+      "type": "string"
     }
+
   },
+
   "required": [
     "beneficiary_user_id",
     "source_user_id",
