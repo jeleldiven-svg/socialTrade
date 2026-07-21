@@ -14,8 +14,12 @@ import { toast } from "@/components/ui/use-toast";
 export default function Register() {
 
 
-const referralCode =
+const urlReferralCode =
 new URLSearchParams(window.location.search).get("ref");
+
+
+const [referralInput,setReferralInput] =
+useState(urlReferralCode || "");
 
 
 const [referrerUserId,setReferrerUserId] =
@@ -23,8 +27,7 @@ useState(null);
 
 
 const [checkingReferral,setCheckingReferral] =
-useState(true);
-
+useState(false);
 
 
 const [email,setEmail] =
@@ -56,29 +59,34 @@ useState("");
 
 
 
-useEffect(()=>{
-
+// REFERANS KONTROL
 
 const checkReferral = async()=>{
 
 
-if(!referralCode){
+const code =
+referralInput.trim().toUpperCase();
 
-setCheckingReferral(false);
+
+if(!code){
+
+setReferrerUserId(null);
+
 return;
 
 }
 
 
-
 try{
+
+
+setCheckingReferral(true);
 
 
 const result =
 await base44.entities.ReferralProfile.filter({
 
-referral_code:
-referralCode.toUpperCase()
+referral_code:code
 
 });
 
@@ -92,8 +100,13 @@ result[0].user_id
 );
 
 
+setError("");
+
 
 }else{
+
+
+setReferrerUserId(null);
 
 
 setError(
@@ -110,10 +123,10 @@ setError(
 
 console.error(err);
 
+
 setError(
 "Referans kontrolü başarısız."
 );
-
 
 
 }finally{
@@ -128,12 +141,20 @@ setCheckingReferral(false);
 };
 
 
+
+
+
+useEffect(()=>{
+
+
+if(urlReferralCode){
+
 checkReferral();
 
+}
 
 
 },[]);
-
 
 
 
@@ -150,6 +171,14 @@ setError("");
 
 
 
+// Referans kontrol
+
+if(!referrerUserId){
+
+
+await checkReferral();
+
+
 if(!referrerUserId){
 
 
@@ -162,6 +191,10 @@ return;
 
 
 }
+
+
+}
+
 
 
 
@@ -177,6 +210,7 @@ return;
 
 
 }
+
 
 
 
@@ -207,7 +241,6 @@ setError(
 err.message ||
 "Kayıt oluşturulamadı"
 );
-
 
 
 }finally{
@@ -270,7 +303,6 @@ await base44.auth.me();
 
 
 
-
 const generatedCode =
 
 currentUser.email
@@ -282,7 +314,7 @@ currentUser.email
 +
 
 Math.floor(
-1000 +
+1000+
 Math.random()*9000
 );
 
@@ -290,9 +322,7 @@ Math.random()*9000
 
 
 
-
-
-const existingProfile =
+const existing =
 await base44.entities.ReferralProfile.filter({
 
 user_id:
@@ -304,8 +334,7 @@ currentUser.id
 
 
 
-if(!existingProfile ||
-existingProfile.length===0){
+if(!existing || existing.length===0){
 
 
 
@@ -325,10 +354,8 @@ referral_code:
 generatedCode,
 
 
-
 referrer_user_id:
 referrerUserId,
-
 
 
 network_level:1,
@@ -356,9 +383,7 @@ monthly_fee:100
 });
 
 
-
 }
-
 
 
 
@@ -388,8 +413,8 @@ setLoading(false);
 }
 
 
-};
 
+};
 
 
 
@@ -419,9 +444,7 @@ description:
 }catch(err){
 
 
-setError(
-err.message
-);
+setError(err.message);
 
 
 }
@@ -436,11 +459,10 @@ err.message
 
 
 
-
 if(showOtp){
 
 
-return(
+return (
 
 <AuthLayout
 
@@ -503,23 +525,12 @@ className="w-full mt-6"
 
 onClick={handleVerify}
 
-disabled={
-loading ||
-otpCode.length<6
-}
+disabled={loading || otpCode.length<6}
 
 >
 
 
-{loading ?
-
-"Doğrulanıyor..."
-
-:
-
-"Doğrula"
-
-}
+{loading ? "Doğrulanıyor..." : "Doğrula"}
 
 
 </Button>
@@ -554,63 +565,9 @@ Yeni kod gönder
 
 
 
-if(!referralCode || !referrerUserId){
 
 
-return(
-
-<AuthLayout
-
-icon={UserPlus}
-
-title="Davet bağlantısı gerekli"
-
-subtitle="Bu platform sadece referans ile üyelik kabul eder."
-
->
-
-
-<p className="text-center text-sm">
-
-Geçerli davet linki kullanmanız gerekiyor.
-
-</p>
-
-
-<Button
-
-className="w-full mt-6"
-
-asChild
-
->
-
-<Link to="/login">
-
-Giriş
-
-</Link>
-
-</Button>
-
-
-</AuthLayout>
-
-
-);
-
-
-}
-
-
-
-
-
-
-
-
-
-return(
+return (
 
 <AuthLayout
 
@@ -621,7 +578,35 @@ title="Hesabını oluştur"
 subtitle="Referans networküne katıl"
 
 
+footer={
+
+<>
+
+Zaten hesabın var mı?
+
+{" "}
+
+<Link
+
+to="/login"
+
+className="text-primary"
+
 >
+
+Giriş yap
+
+</Link>
+
+</>
+
+}
+
+
+>
+
+
+
 
 
 {error &&
@@ -633,6 +618,7 @@ subtitle="Referans networküne katıl"
 </div>
 
 }
+
 
 
 
@@ -666,6 +652,42 @@ className="space-y-4"
 >
 
 
+
+<div>
+
+<Label>
+
+Referans Kodu
+
+</Label>
+
+
+<Input
+
+value={referralInput}
+
+disabled={Boolean(urlReferralCode)}
+
+placeholder="Referans kodunuzu girin"
+
+onChange={(e)=>
+
+setReferralInput(
+e.target.value.toUpperCase()
+)
+
+}
+
+
+/>
+
+
+</div>
+
+
+
+
+
 <div>
 
 <Label>Email</Label>
@@ -683,6 +705,7 @@ required
 />
 
 </div>
+
 
 
 
@@ -707,6 +730,7 @@ required
 
 
 
+
 <div>
 
 <Label>Şifre tekrar</Label>
@@ -727,14 +751,12 @@ required
 
 
 
+
 <Button
 
 className="w-full"
 
-disabled={
-loading ||
-checkingReferral
-}
+disabled={loading || checkingReferral}
 
 >
 
@@ -751,6 +773,7 @@ checkingReferral
 
 
 </Button>
+
 
 
 </form>
