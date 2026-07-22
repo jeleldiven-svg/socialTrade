@@ -4,8 +4,6 @@ import base44 from "@base44/vite-plugin";
 import { fileURLToPath, URL } from "node:url";
 
 export default defineConfig({
-  base: "/socialTrade/",
-
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
